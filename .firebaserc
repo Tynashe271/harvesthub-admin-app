@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "maphric-mobile-app-20260801"
+  },
+  "targets": {
+    "maphric-mobile-app-20260801": {
+      "hosting": {
+        "admin": [
+          "harvesthub-admin"
+        ]
+      }
+    }
+  }
+}
