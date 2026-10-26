@@ -1190,11 +1190,16 @@ class InventoryPage extends StatelessWidget {
           ),
           FilledButton(
             onPressed: () async {
-              await api.patch('products/products/${product['slug']}/', {
-                'stock_quantity': int.tryParse(stock.text) ?? 0,
-                'price': double.tryParse(price.text) ?? 0,
-              });
-              if (dialogContext.mounted) Navigator.pop(dialogContext, true);
+              final messenger = ScaffoldMessenger.of(context);
+              try {
+                await api.patch('products/products/${product['slug']}/', {
+                  'stock_quantity': int.tryParse(stock.text) ?? 0,
+                  'price': double.tryParse(price.text) ?? 0,
+                });
+                if (dialogContext.mounted) Navigator.pop(dialogContext, true);
+              } catch (e) {
+                messenger.showSnackBar(SnackBar(content: Text(e.toString())));
+              }
             },
             child: const Text('Save'),
           ),
@@ -1263,21 +1268,29 @@ class InventoryPage extends StatelessWidget {
               onPressed: category == null
                   ? null
                   : () async {
+                      final messenger = ScaffoldMessenger.of(context);
                       final slug = name.text
                           .trim()
                           .toLowerCase()
                           .replaceAll(RegExp('[^a-z0-9]+'), '-')
                           .replaceAll(RegExp(r'^-|-$'), '');
-                      await api.post('products/products/', {
-                        'category': category,
-                        'name': name.text.trim(),
-                        'slug': slug,
-                        'description': name.text.trim(),
-                        'brand': 'HarvestHub',
-                        'price': double.tryParse(price.text) ?? 0,
-                        'stock_quantity': int.tryParse(stock.text) ?? 0,
-                        'is_active': true,
-                      });
+                      try {
+                        await api.post('products/products/', {
+                          'category': category,
+                          'name': name.text.trim(),
+                          'slug': slug,
+                          'description': name.text.trim(),
+                          'brand': 'HarvestHub',
+                          'price': double.tryParse(price.text) ?? 0,
+                          'stock_quantity': int.tryParse(stock.text) ?? 0,
+                          'is_active': true,
+                        });
+                      } catch (e) {
+                        messenger.showSnackBar(
+                          SnackBar(content: Text(e.toString())),
+                        );
+                        return;
+                      }
                       if (dialogContext.mounted) {
                         Navigator.pop(dialogContext, true);
                       }
@@ -1357,11 +1370,18 @@ class InventoryPage extends StatelessWidget {
                               ],
                             ),
                           );
-                          if (confirmed == true) {
-                            await api.delete(
-                              'products/products/${product['slug']}/',
-                            );
-                            await refresh();
+                          if (confirmed == true && context.mounted) {
+                            final messenger = ScaffoldMessenger.of(context);
+                            try {
+                              await api.delete(
+                                'products/products/${product['slug']}/',
+                              );
+                              await refresh();
+                            } catch (e) {
+                              messenger.showSnackBar(
+                                SnackBar(content: Text(e.toString())),
+                              );
+                            }
                           }
                         },
                         icon: const Icon(
